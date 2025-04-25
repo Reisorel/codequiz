@@ -48,8 +48,12 @@ class SignupSerializer(serializers.Serializer):
 
     # Contrôle le format JSON de sortie lors de la sérialisation
     def to_representation(self, instance):
-        # Génère un token de rafraîchissement JWT pour l'utilisateur
-        refresh = RefreshToken.for_user(instance)
+        """Contrôle le format JSON de sortie lors de la sérialisation"""
+        # Création manuelle du token
+        refresh = RefreshToken()
+        # Stocke l'ID utilisateur comme string dans le token
+        refresh['user_id'] = str(instance.id)
+
         # Retourne un dictionnaire contenant les informations utilisateur et les tokens
         return {
             'user': {
@@ -85,14 +89,19 @@ class LoginSerializer(serializers.Serializer):
 
     # Contrôle le format JSON de sortie pour la connexion
     def to_representation(self, instance):
+        """Contrôle le format JSON de sortie pour la connexion"""
         # Récupère l'utilisateur des données validées
         user = instance['user']
-        # Génère un token de rafraîchissement JWT pour l'utilisateur
-        refresh = RefreshToken.for_user(user)
-        # Retourne uniquement les tokens d'authentification (pas les données utilisateur)
+
+        # Création manuelle du token au lieu d'utiliser for_user
+        refresh = RefreshToken()
+        # Stocke l'ID utilisateur comme string dans le token
+        refresh['user_id'] = str(user.id)
+
+        # Retourne uniquement les tokens d'authentification
         return {
             'tokens': {
-                'access':  str(refresh.access_token),  # Token d'accès pour l'API
-                'refresh': str(refresh)                # Token de rafraîchissement
+                'access':  str(refresh.access_token),
+                'refresh': str(refresh)
             }
         }
